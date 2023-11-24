@@ -25,8 +25,21 @@ import sys
     default="",
     help="output file",
 )
+@click.option(
+    "-w",
+    "--window",
+    is_flag=True,
+)
+@click.option(
+    "-m",
+    "--max",
+    default=30,
+    show_default=True,
+    help="maximum number of proteins included on each line or 'contig'"
+)
 
-def main(infile, out):
+
+def main(infile, out, max, window):
 
     # fetch the genbank file
     gb_dict = genbank.get_genbank(infile)
@@ -50,11 +63,48 @@ def main(infile, out):
             protein_ids = ['None' if i == None else i[0] for i in protein_ids]
             orientation = [str(p.location)[-2] for p in proteins]
 
-            # write to text file
-            f.write(name + '\t')
-            for i, id in enumerate(protein_ids):
-                f.write(orientation[i] + id +';' )
-            f.write('\n')
+            if window and len(protein_ids) >= max:
+
+                # write to a text file
+                line_num = 0
+
+                # loop through proteins
+                for i in range(len(protein_ids)-max):
+
+                    # write header
+                    f.write(name + '_' + str(line_num) + '\n')
+
+                    # write each protein
+                    for j in range(max):
+                        f.write(orientation[i + j] + protein_ids[i+j] + ';')
+
+                    # prepare for next window
+                    else:
+                        line_num +=1
+                        f.write('\n')
+
+
+            else:
+
+                # write to text file
+                f.write(name + '\t')
+
+                # add counter variable before split needs to occur
+                split_count = 1
+                line_num = 0
+
+                for i, id in enumerate(protein_ids):
+
+                    # check if 30 proteins have already been written
+                    if split_count % (max+1) == 0:
+                        line_num += 1
+                        f.write('\n' + name + '_' + str(line_num) + '\n')
+
+                    # write the proteins to file
+                    f.write(orientation[i] + id +';' )
+                    split_count += 1
+
+                f.write('\n')
 
     f.close()
 
