@@ -72,11 +72,14 @@ def main(infile, out, max, window):
                 for i in range(len(protein_ids)-max):
 
                     # write header
-                    f.write(name + '_' + str(line_num) + '\n')
+                    f.write(name + '_' + str(line_num) + '\t')
 
                     # write each protein
                     for j in range(max):
-                        f.write(orientation[i + j] + protein_ids[i+j] + ';')
+                        f.write(orientation[i + j] + protein_ids[i+j])
+
+                        if j < (max - 1):
+                            f.write(';')
 
                     # prepare for next window
                     else:
@@ -87,21 +90,24 @@ def main(infile, out, max, window):
             else:
 
                 # write to text file
-                f.write(name + '\t')
+                #f.write(name + '\t')
 
                 # add counter variable before split needs to occur
-                split_count = 1
+                split_count = 0
                 line_num = 0
 
                 for i, id in enumerate(protein_ids):
 
                     # check if 30 proteins have already been written
-                    if split_count % (max+1) == 0:
+                    if split_count % (max) == 0:
+                        f.write(name + '_' + str(line_num) + '\t')
                         line_num += 1
-                        f.write('\n' + name + '_' + str(line_num) + '\n')
+
+                    else:
+                        f.write(';')
 
                     # write the proteins to file
-                    f.write(orientation[i] + id +';' )
+                    f.write(orientation[i] + id )
                     split_count += 1
 
                 f.write('\n')
