@@ -38,6 +38,106 @@ def get_genbank(genbank):
 
     return gb_dict
 
+
+def extract_order(gb_dict, prefix, max=30, window=False):
+    """
+    Method to generate protein orders in the genbank file
+    :param gb_dict: genbank file as dictionary
+    :param prefix: prefix for output files
+    :param max: maximum window size
+    :param window: whether to generate windows of order
+    """
+    # get the phages
+    phages = list(gb_dict.keys())
+
+    # open file to write
+    with open(prefix + '.tsv', 'w') as f:
+
+        for p in phages:
+
+            # get info
+            name = gb_dict.get(p).name
+            proteins = [i for i in gb_dict.get(p).features if i.type == 'CDS']
+            protein_ids = [r.qualifiers.get('protein_id') for r in proteins]
+            protein_ids = ['None' if i == None else i[0] for i in protein_ids]
+            orientation = [str(p.location)[-2] for p in proteins]
+
+            if window and len(protein_ids) >= max:
+
+                # write to a text file
+                line_num = 0
+
+                # loop through proteins
+                for i in range(len(protein_ids) - max):
+
+                    # write header
+                    f.write(name + '_' + str(line_num) + '\t')
+
+                    # write each protein
+                    for j in range(max):
+                        f.write(orientation[i + j] + protein_ids[i + j])
+
+                        if j < (max - 1):
+                            f.write(';')
+
+                    # prepare for next window
+                    else:
+                        line_num += 1
+                        f.write('\n')
+
+
+            else:
+
+                # add counter variable before split needs to occur
+                split_count = 0
+                line_num = 0
+
+                for i, id in enumerate(protein_ids):
+
+                    # check if 30 proteins have already been written
+                    if split_count % (max) == 0:
+                        f.write(name + '_' + str(line_num) + '\t')
+                        line_num += 1
+
+                    else:
+                        f.write(';')
+
+                    # write the proteins to file
+                    f.write(orientation[i] + id)
+                    split_count += 1
+
+                f.write('\n')
+
+    f.close()
+
+def protein_fasta(gb_dict, prefix):
+    """
+    Generate a fasta file with the proteins in the genbank file
+    :param gb_dict: genbank file as dictionary
+    :param prefix: prefix for output files
+    :return:
+    """
+
+    # get the phages
+    phages = list(gb_dict.keys())
+
+    with open(prefix + '.faa', 'w') as f:
+
+        # loop through the phages
+        for p in phages:
+
+            # fetch details
+            proteins = [i for i in gb_dict.get(p).features if i.type == 'CDS']
+            protein_ids = [r.qualifiers.get('protein_id') for r in proteins]
+            protein_ids = ['None' if i == None else i[0] for i in protein_ids]
+            protein_seqs = [r.qualifiers.get('translation')[0] for r in proteins]
+
+        # write to file
+        for i in range(len(proteins)):
+            f.write(">" + protein_ids[i] + "\n" + protein_seqs[i] + "\n")
+
+    f.close()
+
 def is_gzip_file(f):
     """
     Method copied from Phispy see https://github.com/linsalrob/PhiSpy/blob/master/PhiSpyModules/helper_functions.py
