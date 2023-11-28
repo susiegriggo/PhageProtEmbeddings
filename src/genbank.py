@@ -105,7 +105,6 @@ def extract_order(gb_dict, prefix, max=30, window=False):
                     # write the proteins to file
                     f.write(orientation[i] + id)
                     split_count += 1
-                    print(split_count)
 
     f.close()
 
