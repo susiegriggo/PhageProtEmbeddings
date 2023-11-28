@@ -139,9 +139,9 @@ def protein_fasta(gb_dict, prefix):
             protein_ids = ['None' if i == None else i[0] for i in protein_ids]
             protein_seqs = [r.qualifiers.get('translation')[0] for r in proteins]
 
-        # write to file
-        for i in range(len(proteins)):
-            f.write(">" + protein_ids[i] + "\n" + protein_seqs[i] + "\n")
+            # write to file
+            for i in range(len(proteins)):
+                f.write(">" + protein_ids[i] + "\n" + protein_seqs[i] + "\n")
 
     f.close()
 
