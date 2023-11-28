@@ -96,7 +96,13 @@ def extract_order(gb_dict, prefix, max=30, window=False):
 
                     # check if 30 proteins have already been written
                     if split_count % (max) == 0:
-                        f.write('\n' + name + '_' + str(line_num) + '\t')
+
+                        # if this is not the first entry start a fresh line
+                        if line_num > 0:
+                            f.write('\n')
+
+                        # if not start straight away
+                        f.write(name + '_' + str(line_num) + '\t')
                         line_num += 1
 
                     else:
@@ -105,6 +111,9 @@ def extract_order(gb_dict, prefix, max=30, window=False):
                     # write the proteins to file
                     f.write(orientation[i] + id)
                     split_count += 1
+
+                # prepare for the phage
+                f.write('\n')
 
     f.close()
 
