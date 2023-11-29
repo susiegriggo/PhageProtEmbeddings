@@ -8,6 +8,7 @@ Code snippets copied from Phynteny https://github.com/susiegriggo/Phynteny
 from Bio import SeqIO
 from loguru import logger
 import binascii
+import gzip
 
 def get_genbank(genbank):
     """
