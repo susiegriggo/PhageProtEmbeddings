@@ -40,7 +40,7 @@ def get_genbank(genbank):
     return gb_dict
 
 
-def extract_order(gb_dict, prefix, max=30, window=False):
+def extract_order(gb_dict, prefix, max=30, window=False, step=1):
     """
     Method to generate protein orders in the genbank file
     :param gb_dict: genbank file as dictionary
@@ -68,13 +68,16 @@ def extract_order(gb_dict, prefix, max=30, window=False):
                 # write to a text file
                 line_num = 0
 
+                # apply step size
+                idx = [i for i in range(len(protein_ids) - max)]
+                start_points = idx[0::step]
+
                 # loop through proteins
-                for i in range(len(protein_ids) - max):
+                for i in start_points:
 
                     # write header
                     f.write(name + '_' + str(line_num) + '\t')
 
-                    # write each protein
                     for j in range(max):
                         f.write(orientation[i + j] + protein_ids[i + j])
 
@@ -85,7 +88,6 @@ def extract_order(gb_dict, prefix, max=30, window=False):
                     else:
                         line_num += 1
                         f.write('\n')
-
 
             else:
 

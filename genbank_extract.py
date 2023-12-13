@@ -32,6 +32,13 @@ import sys
     help='generate windows of length max'
 )
 @click.option(
+    "-s",
+    "--step",
+    default=1,
+    show_default=True,
+    help='introduce a step size when generating windows'
+)
+@click.option(
     "-f",
     "--fasta",
     is_flag=True,
@@ -45,8 +52,7 @@ import sys
     help="maximum number of proteins included on each line or 'contig'"
 )
 
-
-def main(infile, prefix, max, window, fasta):
+def main(infile, prefix, max, window, fasta, step):
 
     # fetch the genbank file
     gb_dict = genbank.get_genbank(infile)
@@ -55,7 +61,7 @@ def main(infile, prefix, max, window, fasta):
             sys.exit()
 
     # generate gene order file
-    genbank.extract_order(gb_dict, prefix, max, window)
+    genbank.extract_order(gb_dict, prefix, max, window, step)
 
     # generate the fasta file
     if fasta:
