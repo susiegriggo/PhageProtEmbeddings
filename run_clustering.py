@@ -19,7 +19,6 @@ from sklearn.cluster import MiniBatchKMeans
 import pickle
 
 @click.command()
-@click.argument("infile", type=click.Path(exists=True))
 @click.option(
     "-n",
     "--n_samples",
@@ -28,8 +27,8 @@ import pickle
     help='number of samples to include ber bootstrap'
 )
 @click.option(
-    "-K",
-    "--K",
+    "-k",
+    "--k_clusters",
     default=30,
     show_default=True,
     help="number of clusters K to test"
@@ -63,10 +62,11 @@ import pickle
     help = "name of output dataframe"
 )
 
-def main(n_samples, K, bootstraps, data, batch_size, out):
+def main(n_samples, k_clusters, bootstraps, data, batch_size, out):
 
     # read in the data
     embeddings = pickle.load(open(data, 'rb'))
+    #print(list(embeddings.values())[:4]) 
 
     # array to store data
     inertia = np.zeros(bootstraps)
@@ -78,10 +78,10 @@ def main(n_samples, K, bootstraps, data, batch_size, out):
 
         # get a subsample of the data
         idx = np.random.randint(0, len(embeddings), n_samples)
-        embedding_subset = embeddings[idx]
+        embedding_subset = np.array(list(embeddings.values()))[idx]
 
         # run through the clustering
-        kmeans = MiniBatchKMeans(n_clusters=K, random_state=42, batch_size=batch_size)
+        kmeans = MiniBatchKMeans(n_clusters=k_clusters, random_state=42, batch_size=batch_size)
         kmeans.fit(embedding_subset)
         kmeans_labels = kmeans.fit_predict(embedding_subset)
 
