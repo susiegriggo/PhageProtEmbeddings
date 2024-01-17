@@ -79,13 +79,13 @@ def main(n_samples, k_clusters, bootstraps, data, batch_size, out):
 
         # get a subsample of the data
         idx = np.random.randint(0, len(embeddings), n_samples)
-        embedding_subset = np.array(list(embeddings.values()))[idx]
+        embedding_subset = np.array(list(embeddings.values()))[idx].astype(np.float32)
 
         # turn array into a dask array
         embedding_dask = da.from_array(embedding_subset, chunks=(batch_size, 1280))
 
         # run through the clustering
-        kmeans = KMeans(n_clusters=K, random_state=42) #TODO see if there are other parameters that should be included here
+        kmeans = KMeans(n_clusters=k_clusters, random_state=42) #TODO see if there are other parameters that should be included here
         kmeans.fit(embedding_dask)
         kmeans_labels = kmeans.labels_
 
