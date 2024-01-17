@@ -15,7 +15,8 @@ import pandas as pd
 import click
 from sklearn.metrics import silhouette_score, calinski_harabasz_score
 import numpy as np
-from sklearn.cluster import MiniBatchKMeans
+from dask_ml.cluster import KMeans
+import dask.array as da
 import pickle
 
 @click.command()
@@ -80,10 +81,13 @@ def main(n_samples, K, bootstraps, data, batch_size, out):
         idx = np.random.randint(0, len(embeddings), n_samples)
         embedding_subset = embeddings[idx]
 
+        # turn array into a dask array
+        embedding_dask = da.from_array(embedding_subset, chunks=(batch_size, 1280))
+
         # run through the clustering
-        kmeans = MiniBatchKMeans(n_clusters=K, random_state=42, batch_size=batch_size)
-        kmeans.fit(embedding_subset)
-        kmeans_labels = kmeans.fit_predict(embedding_subset)
+        kmeans = KMeans(n_clusters=K, random_state=42) #TODO see if there are other parameters that should be included here
+        kmeans.fit(embedding_dask)
+        kmeans_labels = kmeans.labels_
 
         # get silhouette and ch score score
         s_score = silhouette_score(embedding_subset, kmeans_labels)
