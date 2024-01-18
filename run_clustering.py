@@ -20,6 +20,7 @@ import numpy as np
 from dask_ml.cluster import KMeans
 import dask.array as da
 import pickle
+import time 
 
 @click.command()
 @click.option(
@@ -91,20 +92,30 @@ def main(n_samples, k_clusters, bootstraps, data, batch_size, out):
         print(b, flush = True)
 
         # get a subsample of the data
-        idx = np.random.randint(0, len(embeddings), n_samples)
+        print('generate subsample')
+        #idx = np.random.randint(0, len(embeddings), n_samples)
         #embedding_subset = np.array(list(embeddings.values()))[idx].astype(np.float32)
-        embedding_subset = [list(embeddings.values())[i] for i in idx]
-        embedding_subset = embedding_subset.astype(np.float32)
+        #embedding_subset = [list(embeddings.values())[i] for i in idx]
+        #embedding_subset = np.array(embedding_subset).astype(np.float32)
+        idx = np.random.choice(list(embeddings.keys()), n_samples, replace=False)
+        embedding_subset = np.array([embeddings[i] for i in idx], dtype=np.float32)
+
 
         # turn array into a dask array
+        print('make dask array')
         embedding_dask = da.from_array(embedding_subset, chunks=(batch_size, 1280))
 
         # run through the clustering
+        print('run kmeans')
+        start = time.time() 
         kmeans = KMeans(n_clusters=k_clusters, random_state=42) #TODO see if there are other parameters that should be included here
         kmeans.fit(embedding_dask)
         kmeans_labels = kmeans.labels_
+        end = time.time() 
+        print(end - start)
 
         # get silhouette and ch score score
+        print('compute scores')
         s_score = silhouette_score(embedding_subset, kmeans_labels)
         ch_score = calinski_harabasz_score(embedding_subset, kmeans_labels)
 
@@ -114,12 +125,16 @@ def main(n_samples, k_clusters, bootstraps, data, batch_size, out):
         ch[b] = ch_score
 
         # if the clustering is better update the saved labels
+        print('update labels')
         if s_score > best_score:
 
-            best_labels = dict(zip([list(embeddings.keys())[i] for i in idx], list(np.asarray(kmeans_labels)))) 
+            #best_labels = dict(zip([list(embeddings.keys())[i] for i in idx], list(np.asarray(kmeans_labels)))) 
+            best_labels = dict(zip(np.random.choice(list(embeddings.keys()), n_samples, replace=False), list(np.asarray(kmeans_labels))))
+
             best_score = s_score
 
     # form a dataframe for these metrics and save it
+    print('save scores to file')
     scores = pd.DataFrame({"inertia": inertia, "silhouette": silhouette, "calinski_harabasz": ch})
 
     # save the dataframe
