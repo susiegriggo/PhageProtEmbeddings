@@ -66,16 +66,22 @@ import pickle
 def main(n_samples, k_clusters, bootstraps, data, batch_size, out):
 
     # read in the data
+    print('reading in the embeddings') 
     embeddings = pickle.load(open(data, 'rb'))
     #print(list(embeddings.values())[:4]) 
 
     # array to store data
+    print('preparing arrays') 
     inertia = np.zeros(bootstraps)
     silhouette = np.zeros(bootstraps)
     ch = np.zeros(bootstraps)
 
     # loop through the bootstraps
+    print('Running bootstraps') 
     for b in range(bootstraps):
+        
+        # print an update
+        print(b, flush = True) 
 
         # get a subsample of the data
         idx = np.random.randint(0, len(embeddings), n_samples)
@@ -101,7 +107,8 @@ def main(n_samples, k_clusters, bootstraps, data, batch_size, out):
     # form a dataframe for these metrics and save it
     scores = pd.DataFrame({"inertia": inertia, "silhouette": silhouette, "calinski_harabasz": ch})
 
-    # save the dataframe
+    # save the dataframei
+    print('Saving data') 
     scores.to_csv(out)
 
 if __name__ == "__main__":
