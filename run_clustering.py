@@ -81,7 +81,7 @@ def main(n_samples, k_clusters, bootstraps, data, batch_size, out):
 
 
     # store the best silhouette score and labels
-    best_score = 0
+    best_score = np.inf
     best_labels = None
 
     # loop through the bootstraps
@@ -100,7 +100,6 @@ def main(n_samples, k_clusters, bootstraps, data, batch_size, out):
         idx = np.random.choice(list(embeddings.keys()), n_samples, replace=True)
         print('generate subsample', flush = True )
         embedding_subset = np.array([embeddings[i] for i in idx], dtype=np.float32)
-
 
         # turn array into a dask array
         print('make dask array', flush = True)
@@ -133,8 +132,8 @@ def main(n_samples, k_clusters, bootstraps, data, batch_size, out):
         if kmeans.inertia_ < best_score:
 
             #best_labels = dict(zip([list(embeddings.keys())[i] for i in idx], list(np.asarray(kmeans_labels)))) 
-            best_labels = dict(zip(np.random.choice(list(embeddings.keys()), n_samples, replace=False), list(np.asarray(kmeans_labels))))
-            best_labels = best_labels = dict(zip(np.random.choice(list(embeddings.keys()), n_samples, replace=False), kmeans_labels))
+            best_labels = dict(zip(idx, list(np.asarray(kmeans_labels))))
+            #best_labels = best_labels = dict(zip(np.random.choice(list(embeddings.keys()), n_samples, replace=False), kmeans_labels))
             best_score = kmeans.inertia_
 
     # form a dataframe for these metrics and save it
