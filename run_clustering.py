@@ -92,7 +92,9 @@ def main(n_samples, k_clusters, bootstraps, data, batch_size, out):
 
         # get a subsample of the data
         idx = np.random.randint(0, len(embeddings), n_samples)
-        embedding_subset = np.array(list(embeddings.values()))[idx].astype(np.float32)
+        #embedding_subset = np.array(list(embeddings.values()))[idx].astype(np.float32)
+        embedding_subset = [list(embeddings.values())[i] for i in idx]
+        embedding_subset = embedding_subset.astype(np.float32)
 
         # turn array into a dask array
         embedding_dask = da.from_array(embedding_subset, chunks=(batch_size, 1280))
