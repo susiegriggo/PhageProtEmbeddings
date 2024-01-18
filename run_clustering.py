@@ -76,8 +76,8 @@ def main(n_samples, k_clusters, bootstraps, data, batch_size, out):
     # array to store data
     print('preparing arrays')
     inertia = np.zeros(bootstraps)
-    silhouette = np.zeros(bootstraps)
-    ch = np.zeros(bootstraps)
+    #silhouette = np.zeros(bootstraps)
+    #ch = np.zeros(bootstraps)
 
 
     # store the best silhouette score and labels
@@ -92,21 +92,22 @@ def main(n_samples, k_clusters, bootstraps, data, batch_size, out):
         print(b, flush = True)
 
         # get a subsample of the data
-        print('generate subsample')
+        print('generate subsample index', flush = True )
         #idx = np.random.randint(0, len(embeddings), n_samples)
         #embedding_subset = np.array(list(embeddings.values()))[idx].astype(np.float32)
         #embedding_subset = [list(embeddings.values())[i] for i in idx]
         #embedding_subset = np.array(embedding_subset).astype(np.float32)
-        idx = np.random.choice(list(embeddings.keys()), n_samples, replace=False)
+        idx = np.random.choice(list(embeddings.keys()), n_samples, replace=True)
+        print('generate subsample', flush = True )
         embedding_subset = np.array([embeddings[i] for i in idx], dtype=np.float32)
 
 
         # turn array into a dask array
-        print('make dask array')
+        print('make dask array', flush = True)
         embedding_dask = da.from_array(embedding_subset, chunks=(batch_size, 1280))
 
         # run through the clustering
-        print('run kmeans')
+        print('run kmeans', flush = True)
         start = time.time() 
         kmeans = KMeans(n_clusters=k_clusters, random_state=42) #TODO see if there are other parameters that should be included here
         kmeans.fit(embedding_dask)
@@ -115,27 +116,31 @@ def main(n_samples, k_clusters, bootstraps, data, batch_size, out):
         print(end - start)
 
         # get silhouette and ch score score
-        print('compute scores')
-        s_score = silhouette_score(embedding_subset, kmeans_labels)
-        ch_score = calinski_harabasz_score(embedding_subset, kmeans_labels)
+        print('compute scores', flush = True)
+        #start = time.time()
+        #s_score = silhouette_score(embedding_subset, kmeans_labels, metric = 'cosine')
+        #ch_score = calinski_harabasz_score(embedding_subset, kmeans_labels, metri = 'cosine')
 
         # store the scores
         inertia[b] = kmeans.inertia_
-        silhouette[b] = s_score
-        ch[b] = ch_score
+        #silhouette[b] = s_score
+        #ch[b] = ch_score
+        #end = time.time() 
+        #print(end - start)
 
         # if the clustering is better update the saved labels
-        print('update labels')
-        if s_score > best_score:
+        print('update labels', flush = True)
+        if kmeans.inertia_ < best_score:
 
             #best_labels = dict(zip([list(embeddings.keys())[i] for i in idx], list(np.asarray(kmeans_labels)))) 
             best_labels = dict(zip(np.random.choice(list(embeddings.keys()), n_samples, replace=False), list(np.asarray(kmeans_labels))))
-
-            best_score = s_score
+            best_labels = best_labels = dict(zip(np.random.choice(list(embeddings.keys()), n_samples, replace=False), kmeans_labels))
+            best_score = kmeans.inertia_
 
     # form a dataframe for these metrics and save it
-    print('save scores to file')
-    scores = pd.DataFrame({"inertia": inertia, "silhouette": silhouette, "calinski_harabasz": ch})
+    print('save scores to file', flush = True)
+    #scores = pd.DataFrame({"inertia": inertia, "silhouette": silhouette, "calinski_harabasz": ch})
+    scores = pd.DataFrame({"inertia": inertia}) 
 
     # save the dataframe
     scores.to_csv(out + '_scores.tsv')
