@@ -1,5 +1,7 @@
 """
 Run clustering
+
+Currently saves the best labels based on the silhouette score. May change to use whichever score is best
 """
 
 __author__ = "Susanna Grigson"
@@ -66,22 +68,27 @@ import pickle
 def main(n_samples, k_clusters, bootstraps, data, batch_size, out):
 
     # read in the data
-    print('reading in the embeddings') 
+    print('reading in the embeddings')
     embeddings = pickle.load(open(data, 'rb'))
     #print(list(embeddings.values())[:4]) 
 
     # array to store data
-    print('preparing arrays') 
+    print('preparing arrays')
     inertia = np.zeros(bootstraps)
     silhouette = np.zeros(bootstraps)
     ch = np.zeros(bootstraps)
 
+
+    # store the best silhouette score and labels
+    best_score = 0
+    best_labels = None
+
     # loop through the bootstraps
-    print('Running bootstraps') 
+    print('Running bootstraps')
     for b in range(bootstraps):
-        
+
         # print an update
-        print(b, flush = True) 
+        print(b, flush = True)
 
         # get a subsample of the data
         idx = np.random.randint(0, len(embeddings), n_samples)
@@ -104,12 +111,21 @@ def main(n_samples, k_clusters, bootstraps, data, batch_size, out):
         silhouette[b] = s_score
         ch[b] = ch_score
 
+        # if the clustering is better update the saved labels
+        if s_score > best_score:
+
+            best_labels = dict(zip(list(embeddings.values()))[idx], list(kmeans_labels))
+            best_score = s_score
+
     # form a dataframe for these metrics and save it
     scores = pd.DataFrame({"inertia": inertia, "silhouette": silhouette, "calinski_harabasz": ch})
 
-    # save the dataframei
-    print('Saving data') 
-    scores.to_csv(out)
+    # save the dataframe
+    scores.to_csv(out + '_scores.tsv')
+
+    # save the best labels
+    pickle.dump(best_labels, open(out + '_bestlabels.tsv', 'wb'))
+
 
 if __name__ == "__main__":
     main()
