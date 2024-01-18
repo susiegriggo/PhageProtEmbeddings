@@ -114,7 +114,7 @@ def main(n_samples, k_clusters, bootstraps, data, batch_size, out):
         # if the clustering is better update the saved labels
         if s_score > best_score:
 
-            best_labels = dict(zip(list(embeddings.values()))[idx], list(kmeans_labels))
+            best_labels = dict(zip([list(embeddings.keys())[i] for i in idx], list(np.asarray(kmeans_labels)))) 
             best_score = s_score
 
     # form a dataframe for these metrics and save it
@@ -124,7 +124,7 @@ def main(n_samples, k_clusters, bootstraps, data, batch_size, out):
     scores.to_csv(out + '_scores.tsv')
 
     # save the best labels
-    pickle.dump(best_labels, open(out + '_bestlabels.tsv', 'wb'))
+    pickle.dump(best_labels, open(out + '_bestlabels.pkl', 'wb'))
 
 
 if __name__ == "__main__":
