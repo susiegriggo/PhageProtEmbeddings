@@ -107,6 +107,7 @@ def main(n_samples, k_clusters, bootstraps, data, batch_size, out):
 
         # run through the clustering
         print('run kmeans', flush = True)
+        print(k_clusters)
         start = time.time() 
         kmeans = KMeans(n_clusters=k_clusters, random_state=42) #TODO see if there are other parameters that should be included here
         kmeans.fit(embedding_dask)
