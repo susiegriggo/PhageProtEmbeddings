@@ -79,6 +79,14 @@ def main(n_samples, k_clusters, bootstraps, data, batch_size, out):
     best_score = np.inf
     best_labels = None
 
+    # compute the sample size - if its not specified we take the entire dataset
+    subset = True
+    if n_samples == 0:
+
+        print('You have not specified a sample size for clustering. Using all data for clustering')
+        n_samples = len(embeddings)
+        subset =  False
+
     # loop through the bootstraps
     print(str(bootstraps) + ' boostraps have been specified. Looping ...')
     for b in range(bootstraps):
@@ -87,9 +95,13 @@ def main(n_samples, k_clusters, bootstraps, data, batch_size, out):
         print( '\t bootstrap: ' + str(b), flush = True)
 
         # get a subsample of the data
-        print('\t generating subsample of size ' + str(n_samples), flush = True )
-        idx = np.random.choice(list(embeddings.keys()), n_samples, replace=True)
-        embedding_subset = np.array([embeddings[i] for i in idx], dtype=np.float32)
+        if subset:
+            print('\t generating subsample of size ' + str(n_samples), flush = True )
+            idx = np.random.choice(list(embeddings.keys()), n_samples, replace=True)
+            embedding_subset = np.array([embeddings[i] for i in idx], dtype=np.float32)
+        else:
+            print('\t transforming embeddings', flush = True)
+            embedding_subset = np.array(embeddings,  dtype=np.float32)
 
         # turn array into a dask array
         embedding_dask = da.from_array(embedding_subset, chunks=(batch_size, 1280))
