@@ -101,7 +101,7 @@ def main(n_samples, k_clusters, bootstraps, data, batch_size, out):
             embedding_subset = np.array([embeddings[i] for i in idx], dtype=np.float32)
         else:
             print('\t transforming embeddings', flush = True)
-            embedding_subset = np.array(embeddings,  dtype=np.float32)
+            embedding_subset = np.array(list(embeddings.values()),  dtype=np.float32)
 
         # turn array into a dask array
         embedding_dask = da.from_array(embedding_subset, chunks=(batch_size, 1280))
