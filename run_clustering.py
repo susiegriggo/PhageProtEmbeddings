@@ -69,7 +69,7 @@ import time
 def main(n_samples, k_clusters, bootstraps, data, batch_size, out):
 
     # read in the data
-    print('Reading in protein embeddings located at :' + str(data))
+    print('Reading in protein embeddings located at : ' + str(data))
     embeddings = pickle.load(open(data, 'rb'))
 
     # array to store data
@@ -80,7 +80,7 @@ def main(n_samples, k_clusters, bootstraps, data, batch_size, out):
     best_labels = None
 
     # loop through the bootstraps
-    print(str(bootstraps) + 'have been specified. Looping through bootstraps...')
+    print(str(bootstraps) + ' boostraps have been specified. Looping ...')
     for b in range(bootstraps):
 
         # print an update
@@ -112,7 +112,7 @@ def main(n_samples, k_clusters, bootstraps, data, batch_size, out):
         inertia[b] = kmeans.inertia_
 
         # if the clustering is better update the saved labels
-        print('\t updating labels', flush = True)
+        print('\t updating labels\n', flush = True)
         if kmeans.inertia_ < best_score:
 
             best_labels = dict(zip(idx, list(np.asarray(kmeans_labels))))
