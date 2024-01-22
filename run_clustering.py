@@ -15,7 +15,7 @@ __status__ = "development"
 # imports
 import pandas as pd
 import click
-#from sklearn.metrics import silhouette_score, calinski_harabasz_score
+from sklearn.metrics import silhouette_score, calinski_harabasz_score
 import numpy as np
 from dask_ml.cluster import KMeans
 import dask.array as da
@@ -74,6 +74,8 @@ def main(n_samples, k_clusters, bootstraps, data, batch_size, out):
 
     # array to store data
     inertia = np.zeros(bootstraps)
+    silhouette = np.zeros(bootstraps)
+    calinski_harabasz = np.zeros(bootstraps)
 
     # store the best silhouette score and labels
     best_score = np.inf
@@ -117,11 +119,13 @@ def main(n_samples, k_clusters, bootstraps, data, batch_size, out):
 
         # get silhouette and ch score score
         print('\t computing clustering scores', flush = True)
-        #s_score = silhouette_score(embedding_subset, kmeans_labels, metric = 'cosine')
-        #ch_score = calinski_harabasz_score(embedding_subset, kmeans_labels, metri = 'cosine')
+        s_score = silhouette_score(embedding_subset, kmeans_labels, metric = 'cosine')
+        ch_score = calinski_harabasz_score(embedding_subset, kmeans_labels, metric= 'cosine')
 
         # store the scores
         inertia[b] = kmeans.inertia_
+        silhouette[b] = s_score
+        calinski_harabasz[b] = ch_score
 
         # if the clustering is better update the saved labels
         print('\t updating labels\n', flush = True)
@@ -132,7 +136,8 @@ def main(n_samples, k_clusters, bootstraps, data, batch_size, out):
 
     # form a dataframe for these metrics and save it
     print('\n DONE\n saving output to ' + out, flush = True)
-    scores = pd.DataFrame({"inertia": inertia}) 
+    #scores = pd.DataFrame({"inertia": inertia})
+    scores = pd.DataFrame({"inertia": inertia}, "silhouette": silhouette, "calinskiharabasz": calinski_harabasz})
 
     # save the dataframe
     scores.to_csv(out + '_scores.tsv')
