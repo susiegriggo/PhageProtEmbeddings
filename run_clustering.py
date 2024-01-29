@@ -75,7 +75,7 @@ def main(n_samples, k_clusters, bootstraps, data, batch_size, out):
     # array to store data
     inertia = np.zeros(bootstraps)
     silhouette = np.zeros(bootstraps)
-    calinski_harabasz = np.zeros(bootstraps)
+    #calinski_harabasz = np.zeros(bootstraps)
 
     # store the best silhouette score and labels
     best_score = np.inf
@@ -119,13 +119,16 @@ def main(n_samples, k_clusters, bootstraps, data, batch_size, out):
 
         # get silhouette and ch score score
         print('\t computing clustering scores', flush = True)
-        s_score = silhouette_score(embedding_subset, kmeans_labels, metric = 'cosine')
-        ch_score = calinski_harabasz_score(embedding_subset, kmeans_labels, metric= 'cosine')
+        start = time.time() 
+        s_score = silhouette_score(embedding_subset, kmeans_labels, metric = 'cosine', sample_size=100000)
+        #ch_score = calinski_harabasz_score(embedding_subset, kmeans_labels)
 
-        # store the scores
+        # store the scores 
         inertia[b] = kmeans.inertia_
         silhouette[b] = s_score
-        calinski_harabasz[b] = ch_score
+        #calinski_harabasz[b] = ch_score
+        end = time.time() 
+        print('\t scores computed in ' + str(end - start) + ' seconds') 
 
         # if the clustering is better update the saved labels
         print('\t updating labels\n', flush = True)
@@ -137,7 +140,7 @@ def main(n_samples, k_clusters, bootstraps, data, batch_size, out):
     # form a dataframe for these metrics and save it
     print('\n DONE\n saving output to ' + out, flush = True)
     #scores = pd.DataFrame({"inertia": inertia})
-    scores = pd.DataFrame({"inertia": inertia}, "silhouette": silhouette, "calinskiharabasz": calinski_harabasz})
+    scores = pd.DataFrame({"inertia": inertia, "silhouette": silhouette})
 
     # save the dataframe
     scores.to_csv(out + '_scores.tsv')
